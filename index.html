@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QR Code Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #000;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border-radius: 25px;
+            box-shadow: 0 0 20px rgba(76, 201, 240, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            padding: 25px 30px;
+            background: rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: #4cc9f0;
+        }
+
+        .logo h1 {
+            font-size: 2.2rem;
+            background: linear-gradient(to right, #4cc9f0, #4361ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .content {
+            display: flex;
+            padding: 30px;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+        }
+
+        .form-panel, .preview-panel {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .input-group input, 
+        .input-group select {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .color-pickers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-picker input {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: transparent;
+            padding: 0;
+        }
+
+        .color-picker span {
+            color: white;
+        }
+
+        .shape-selectors {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .shape-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shape-btn.active {
+            background: rgba(67, 97, 238, 0.2);
+            border-color: #4361ee;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(45deg, #4cc9f0, #4361ee);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(76, 201, 240, 0.6);
+        }
+
+        .qr-container {
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 1;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            box-shadow: 0 0 25px rgba(76, 201, 240, 0.3);
+        }
+
+        #qr-code {
+            width: 85%;
+            height: 85%;
+        }
+
+        .footer {
+            padding: 20px 30px;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Loader Styles */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #loader .bounce {
+            width: 20px;
+            height: 20px;
+            margin: 8px;
+            background-color: #4cc9f0;
+            border-radius: 50%;
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        #loader .bounce:nth-child(1) { animation-delay: -0.32s; }
+        #loader .bounce:nth-child(2) { animation-delay: -0.16s; }
+        #loader .bounce:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div id="loader">
+        <div class="bounce"></div>
+        <div class="bounce"></div>
+        <div class="bounce"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-qrcode"></i>
+                <h1>QR Code Generator</h1>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="form-panel">
+                <div class="input-group">
+                    <label for="url-input">Enter URL or Text</label>
+                    <input type="text" id="url-input" placeholder="https://example.com" value="https://github.com">
+                </div>
+
+                <div class="color-pickers">
+                    <div class="color-picker">
+                        <input type="color" id="qr-color" value="#3a0ca3">
+                        <span>QR Color</span>
+                    </div>
+                    <div class="color-picker">
+                        <input type="color" id="bg-color" value="#ffffff">
+                        <span>Background</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Dot Shape</label>
+                    <div class="shape-selectors">
+                        <div class="shape-btn active" data-shape="square">
+                            <i class="fas fa-square"></i>
+                            <span>Square</span>
+                        </div>
+                        <div class="shape-btn" data-shape="circle">
+                            <i class="fas fa-circle"></i>
+                            <span>Circle</span>
+                        </div>
+                        <div class="shape-btn" data-shape="rounded">
+                            <i class="fas fa-square"></i>
+                            <span>Rounded</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="download-btn" id="download-btn">
+                    <i class="fas fa-download"></i>
+                    Download QR Code
+                </button>
+            </div>
+
+            <div class="preview-panel">
+                <h2 style="color: white; margin-bottom: 20px;">QR Code Preview</h2>
+                <div class="qr-container">
+                    <div id="qr-code"></div>
+                </div>
+                <p style="color: rgba(255, 255, 255, 0.7); text-align: center;">
+                    Customize the QR code using the options on the left. Your changes will appear here in real-time.
+                </p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p> &copy; 2025 | Anisha </p>
+        </div>
+    </div>
+
+    <script>
+        let qrCode;
+
+        function initQRCode() {
+            qrCode = new QRCodeStyling({
+                width: 300,
+                height: 300,
+                data: document.getElementById('url-input').value,
+                dotsOptions: {
+                    color: document.getElementById('qr-color').value,
+                    type: 'square'
+                },
+                backgroundOptions: {
+                    color: document.getElementById('bg-color').value,
+                },
+                imageOptions: {
+                    crossOrigin: "anonymous",
+                    margin: 10
+                }
+            });
+            qrCode.append(document.getElementById('qr-code'));
+        }
+
+        function updateQRCode() {
+            const data = document.getElementById('url-input').value;
+            const qrColor = document.getElementById('qr-color').value;
+            const bgColor = document.getElementById('bg-color').value;
+            const shape = document.querySelector('.shape-btn.active').dataset.shape;
+
+            qrCode.update({
+                data: data,
+                dotsOptions: {
+                    color: qrColor,
+                    type: shape
+                },
+                backgroundOptions: {
+                    color: bgColor
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initQRCode();
+
+            document.getElementById('url-input').addEventListener('input', updateQRCode);
+            document.getElementById('qr-color').addEventListener('input', updateQRCode);
+            document.getElementById('bg-color').addEventListener('input', updateQRCode);
+
+            document.querySelectorAll('.shape-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    updateQRCode();
+                });
+            });
+
+            document.getElementById('download-btn').addEventListener('click', function() {
+                qrCode.download({
+                    extension: "png",
+                    name: "custom-qr-code"
+                });
+            });
+        });
+
+        window.addEventListener('load', function () {
+            setTimeout(function() {
+                document.getElementById('loader').style.display = 'none';
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
